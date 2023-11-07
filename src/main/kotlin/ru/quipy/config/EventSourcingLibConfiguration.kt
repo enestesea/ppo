@@ -54,7 +54,7 @@ class EventSourcingLibConfiguration {
      * Use this object to create/update the aggregate
      */
     @Bean
-    fun projectEsService() = eventSourcingServiceFactory.create<UUID, ProjectAggregate, ProjectAggregateState>()
+    fun accountEsService() = eventSourcingServiceFactory.create<UUID, AccountAggregate, ProjectAggregateState>()
 
     @PostConstruct
     fun init() {

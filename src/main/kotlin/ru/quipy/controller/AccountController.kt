@@ -6,9 +6,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import ru.quipy.api.ProjectAggregate
-import ru.quipy.api.ProjectCreatedEvent
-import ru.quipy.api.TaskCreatedEvent
 import ru.quipy.core.EventSourcingService
 import ru.quipy.logic.ProjectAggregateState
 import ru.quipy.logic.addTask
@@ -17,8 +14,8 @@ import java.util.*
 
 @RestController
 @RequestMapping("/projects")
-class ProjectController(
-    val projectEsService: EventSourcingService<UUID, ProjectAggregate, ProjectAggregateState>
+class AccountController(
+    val accountEsService: EventSourcingService<UUID, AccountAggregate, ProjectAggregateState>
 ) {
 
     @PostMapping("/{projectTitle}")
