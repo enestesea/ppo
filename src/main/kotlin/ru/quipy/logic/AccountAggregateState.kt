@@ -9,9 +9,9 @@ import java.util.*
 class AccountAggregateState : AggregateState<UUID, AccountAggregate> {
     private lateinit var accountId: UUID
     val bankAccounts = mutableMapOf<UUID, BankAccount>()
-    val bankAccountsCountLimit = 5
-    val bankAccountBalanceLimit = 10_000_000
-    val accountBalanceLimit = 25_000_000
+    private val bankAccountsCountLimit = 5
+    private val bankAccountBalanceLimit = 10_000_000
+    private val accountBalanceLimit = 25_000_000
 
     override fun getId() = accountId
 
@@ -44,7 +44,7 @@ class AccountAggregateState : AggregateState<UUID, AccountAggregate> {
     }
     @StateTransitionFunc
     fun bankAccountCreatedApply(event: BankAccountCreatedEvent) {
-        bankAccounts[event.bankAccountId] = BankAccount(event.bankAccountId, BankAccountStatus.Open, 0.0)
+        bankAccounts[event.bankAccountId] = BankAccount(event.bankAccountId)
     }
 
     @StateTransitionFunc
@@ -54,22 +54,22 @@ class AccountAggregateState : AggregateState<UUID, AccountAggregate> {
 
     @StateTransitionFunc
     fun accountMoneyWithdrawnApply(event: BankAccountMoneyWithdrawnEvent) {
-        bankAccounts[event.bankAccountId]?.balance?.minus(event.amount)
+        bankAccounts[event.bankAccountId]?.balance = bankAccounts[event.bankAccountId]?.balance?.minus(event.amount)!!
     }
 
     @StateTransitionFunc
     fun accountMoneyEnrolledApply(event: BankAccountMoneyEnrolledEvent) {
-        bankAccounts[event.bankAccountId]?.balance?.plus(event.amount)
+        bankAccounts[event.bankAccountId]?.balance = bankAccounts[event.bankAccountId]?.balance?.plus(event.amount)!!
     }
     @StateTransitionFunc
     fun accountMoneyTransferredApply(event: BankAccountMoneyTransferredEvent) {
-        bankAccounts[event.senderId]?.balance?.minus(event.amount)
-        bankAccounts[event.receiverId]?.balance?.plus(event.amount)
+        bankAccounts[event.senderId]?.balance = bankAccounts[event.senderId]?.balance?.minus(event.amount)!!
+        bankAccounts[event.receiverId]?.balance = bankAccounts[event.receiverId]?.balance?.plus(event.amount)!!
     }
 }
 
 data class BankAccount(
     val id: UUID,
-    var status: BankAccountStatus,
-    var balance: Double
+    var status: BankAccountStatus = BankAccountStatus.Open,
+    var balance: Double = 0.0,
 )
