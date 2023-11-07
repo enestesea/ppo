@@ -1,37 +1,53 @@
 package ru.quipy.controller
 
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+import ru.quipy.api.*
 import ru.quipy.core.EventSourcingService
-import ru.quipy.logic.ProjectAggregateState
-import ru.quipy.logic.addTask
-import ru.quipy.logic.create
+import ru.quipy.logic.*
 import java.util.*
 
 @RestController
-@RequestMapping("/projects")
+@RequestMapping("/accounts")
 class AccountController(
-    val accountEsService: EventSourcingService<UUID, AccountAggregate, ProjectAggregateState>
+    val accountEsService: EventSourcingService<UUID, AccountAggregate, AccountAggregateState>
 ) {
-
-    @PostMapping("/{projectTitle}")
-    fun createProject(@PathVariable projectTitle: String, @RequestParam creatorId: String) : ProjectCreatedEvent {
-        return projectEsService.create { it.create(UUID.randomUUID(), projectTitle, creatorId) }
+    @PostMapping("/")
+    fun createAccount(): AccountCreatedEvent {
+        return accountEsService.create { it.create(UUID.randomUUID()) }
     }
 
-    @GetMapping("/{projectId}")
-    fun getAccount(@PathVariable projectId: UUID) : ProjectAggregateState? {
-        return projectEsService.getState(projectId)
+    @GetMapping("/{accountId}")
+    fun getAccount(@PathVariable accountId: UUID): AccountAggregateState? {
+        return accountEsService.getState(accountId)
     }
 
-    @PostMapping("/{projectId}/tasks/{taskName}")
-    fun createTask(@PathVariable projectId: UUID, @PathVariable taskName: String) : TaskCreatedEvent {
-        return projectEsService.update(projectId) {
-            it.addTask(taskName)
-        }
+    @PostMapping("/{accountId}/bank-accounts")
+    fun createBankAccount(@PathVariable accountId: UUID): BankAccountCreatedEvent {
+        return accountEsService.update(accountId) { it.createBankAccount(UUID.randomUUID()) }
+    }
+
+    @PostMapping("/{accountId}/bank-accounts/{bankAccountId}/disable")
+    fun disableBankAccount(@PathVariable accountId: UUID, @PathVariable bankAccountId: UUID): BankAccountDisabledEvent {
+        return accountEsService.update(accountId) { it.disable(bankAccountId) }
+    }
+
+    @PostMapping("/{accountId}/bank-accounts/{bankAccountId}/withdraw")
+    fun withdrawBankAccount(@PathVariable accountId: UUID, @PathVariable bankAccountId: UUID, @RequestBody body: WithdrawalRequest): BankAccountMoneyWithdrawnEvent {
+        return accountEsService.update(accountId) { it.withdraw(bankAccountId, body.amount) }
+    }
+
+    @PostMapping("/{accountId}/bank-accounts/{bankAccountId}/enroll")
+    fun withdrawBankAccount(@PathVariable accountId: UUID, @PathVariable bankAccountId: UUID, @RequestBody body: EnrollRequest): BankAccountMoneyEnrolledEvent {
+        return accountEsService.update(accountId) { it.enroll(bankAccountId, body.amount) }
+    }
+
+    @PostMapping("/{accountId}/bank-accounts/transfer")
+    fun transferBankAccount(@PathVariable accountId: UUID, @RequestBody body: TransferRequest): BankAccountMoneyTransferredEvent {
+        return accountEsService.update(accountId) { it.transferBetweenInternal(body.senderId, body.receiverId, body.amount) }
     }
 }
+
+
+data class WithdrawalRequest(val amount: Double)
+data class EnrollRequest(val amount: Double)
+data class TransferRequest(val senderId: UUID, val receiverId: UUID, val amount: Double)
