@@ -11,7 +11,7 @@ import java.util.*
 class AccountController(
     val accountEsService: EventSourcingService<UUID, AccountAggregate, AccountAggregateState>
 ) {
-    @PostMapping("/")
+    @PostMapping("")
     fun createAccount(): AccountCreatedEvent {
         return accountEsService.create { it.create(UUID.randomUUID()) }
     }
