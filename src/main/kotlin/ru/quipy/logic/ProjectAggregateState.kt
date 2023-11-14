@@ -35,12 +35,7 @@ class ProjectAggregateState : AggregateState<UUID, ProjectAggregate> {
 
     @StateTransitionFunc
     fun leaveProjectApply(event: LeaveProjectEvent) {
-        val success = participants.remove(element = event.userId)
-
-        if (!success) {
-            throw IllegalArgumentException("User not found!")
-        }
-
+        participants.remove(element = event.userId)
         updatedAt = event.createdAt
     }
     @StateTransitionFunc
@@ -50,7 +45,7 @@ class ProjectAggregateState : AggregateState<UUID, ProjectAggregate> {
     }
     @StateTransitionFunc
     fun statusDeletedApply(event: StatusDeletedEvent) {
-        projectStatuses.remove(event.statusId) ?: throw IllegalArgumentException("Status not found!")
+        projectStatuses.remove(event.statusId)
         updatedAt = event.createdAt
     }
 }

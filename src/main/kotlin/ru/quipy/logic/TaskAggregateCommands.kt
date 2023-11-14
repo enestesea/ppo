@@ -16,6 +16,10 @@ fun TaskAggregateState.updateTask(name: String, description: String, deadline: D
 }
 
 fun TaskAggregateState.addExecutor(userId: UUID): ExecutorAddedEvent {
+    if (executors.contains(userId)) {
+        throw IllegalArgumentException("User is already assigned as an executor for this task.")
+    }
+
     return ExecutorAddedEvent(this.getId(), userId)
 }
 
