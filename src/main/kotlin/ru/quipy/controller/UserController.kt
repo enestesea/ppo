@@ -1,9 +1,6 @@
 package ru.quipy.controller
 
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import ru.quipy.api.UserAggregate
 import ru.quipy.api.UserCreatedEvent
 import ru.quipy.core.EventSourcingService
@@ -17,11 +14,25 @@ import java.util.*
 class UserController(
     val usersEsService: EventSourcingService<UUID, UserAggregate, UserAggregateState>
 ) {
-
     @PostMapping("")
-    fun createUser(@RequestBody body: CreateUserRequest): UserCreatedEvent {
-        return usersEsService.create { it.createUser(UUID.randomUUID(), body.userName, body.nickname, body.password) }
+    fun createUser(
+        @RequestParam nickname: String,
+        @RequestParam userName: String,
+        @RequestParam password: String
+    ) : UserCreatedEvent {
+        return usersEsService.create {
+            it.createUser(
+                id = UUID.randomUUID(),
+                nickname = nickname,
+                userName = userName,
+                password = password,
+            )
+        }
     }
+//    @PostMapping("")
+//    fun createUser(@RequestBody body: CreateUserRequest): UserCreatedEvent {
+//        return usersEsService.create { it.createUser(UUID.randomUUID(), body.userName, body.nickname, body.password) }
+//    }
 }
 
 data class CreateUserRequest (
